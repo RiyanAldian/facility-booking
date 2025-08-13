@@ -76,7 +76,7 @@ export async function login(payload: LoginPayload) {
 }
 export async function logout() {
   try {
-    await api.post("/auth/logout");
+    await api.post("https://booking-api.hyge.web.id/auth/logout");
   } catch {}
   await SecureStore.deleteItemAsync("accessToken");
   await SecureStore.deleteItemAsync("refreshToken");

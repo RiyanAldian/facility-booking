@@ -1,17 +1,43 @@
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
-import { Button, Text, View } from "react-native";
-// import { FacilityItem } from "../../components/FacilityItem";
-// import { SearchBar } from "../../components/SearchBar";
-import api from "../../lib/api";
-import type { Facility } from "../../lib/types";
+import { Button, FlatList, RefreshControl, Text, View } from "react-native";
+import { FacilityItem } from "../../components/FacilityItem";
+import { SearchBar } from "../../components/SearchBar";
 
 async function fetchFacilities(search: string) {
-  const res = await api.get<Facility[]>(`/facilities`, {
-    params: { search: search || undefined },
-  });
-  return res.data;
+  try {
+    // Ambil token dari SecureStore
+    const token = await SecureStore.getItemAsync("accessToken");
+
+    // Buat URL dengan query params jika ada pencarian
+    const url = new URL("https://booking-api.hyge.web.id/facilities");
+    if (search) {
+      url.searchParams.append("search", search);
+    }
+
+    // Fetch data
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
+
+    console.log("Status:", res.status, "OK?:", res.ok);
+    if (!res.ok) {
+      throw new Error(`Gagal fetch facilities: ${res.status}`);
+    }
+
+    const data = await res.json();
+    console.log("Facilities data:", data);
+    return data;
+  } catch (err) {
+    console.error("Error getFacilities:", err);
+    return [];
+  }
 }
 
 export default function FacilitiesScreen() {
@@ -35,9 +61,9 @@ export default function FacilitiesScreen() {
         <Button title="Profil" onPress={() => router.push("/(app)/profile")} />
       </View>
 
-      {/* <SearchBar value={search} onChange={setSearch} /> */}
+      <SearchBar value={search} onChange={setSearch} />
 
-      {/* <FlatList
+      <FlatList
         data={query.data}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
@@ -57,7 +83,7 @@ export default function FacilitiesScreen() {
             <Text style={{ padding: 16 }}>Tidak ada data</Text>
           ) : null
         }
-      /> */}
+      />
     </View>
   );
 }

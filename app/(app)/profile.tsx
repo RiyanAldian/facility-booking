@@ -2,8 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Alert, Button, Text, TextInput, View } from "react-native";
 import { z } from "zod";
-import { logout, updateProfile } from "../../lib/auth";
-import { useAuthStore } from "../../lib/store";
+import { useAuthStore } from "../../lib/authStore";
 
 const profileSchema = z.object({
   name: z.string().min(2).optional(),
@@ -15,6 +14,8 @@ type ProfileForm = z.infer<typeof profileSchema>;
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
+  // console.log(user?.name);
+  const logout = () => useAuthStore.getState().logout();
   const {
     register,
     setValue,
@@ -27,7 +28,7 @@ export default function ProfileScreen() {
 
   const onSubmit = async (data: ProfileForm) => {
     try {
-      await updateProfile(data);
+      // await updateProfile(data);
       Alert.alert("Berhasil", "Profil diperbarui");
     } catch (e) {
       Alert.alert("Gagal", "Tidak bisa memperbarui profil");

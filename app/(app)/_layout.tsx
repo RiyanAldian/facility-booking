@@ -1,13 +1,10 @@
 import { Redirect, Stack } from "expo-router";
-import { useAuthStore } from "../../lib/store";
+import { useAuthStore } from "../../lib/authStore";
 
 export default function AppLayout() {
-  const use = useAuthStore((s) => {
-    console.log(s);
-  });
   const user = useAuthStore((s) => s.user);
 
-  // console.log(use);
+  console.log(user);
   if (!user) return <Redirect href="/(auth)/login" />;
   return <Stack />;
 }

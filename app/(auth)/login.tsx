@@ -2,10 +2,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { Button, Text, TextInput, View } from "react-native";
-import { login } from "../../lib/auth";
+import { loginApi } from "../../lib/auth";
+import { useAuthStore } from "../../lib/authStore";
 import { loginSchema, LoginSchema } from "../../lib/validation";
 
 export default function LoginScreen() {
+  const setAuth = useAuthStore((s) => s.setAuth);
+  // console.log();
   const {
     register,
     setValue,
@@ -16,12 +19,18 @@ export default function LoginScreen() {
   });
 
   const onSubmit = async (data: LoginSchema) => {
-    await login(data);
-    router.replace("/(app)/facilities");
+    try {
+      const res = await loginApi(data.email, data.password);
+      // console.log(res.user);
+      await useAuthStore.getState().setAuth(res.accessToken, res.user);
+      router.replace("../(app)/facilities"); // Redirect ke home
+    } catch {
+      alert("Email atau password salah");
+    }
   };
 
   return (
-    <View style={{ padding: 20, gap: 8 }}>
+    <View style={{ padding: 40, gap: 8 }}>
       <Text style={{ fontSize: 24, fontWeight: "700" }}>Masuk</Text>
       <Text>Email</Text>
       <TextInput

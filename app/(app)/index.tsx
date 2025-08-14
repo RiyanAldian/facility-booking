@@ -3,16 +3,16 @@ import { useEffect } from "react";
 import { useAuthStore } from "../../lib/authStore";
 
 export default function Index() {
-  const { accessToken } = useAuthStore();
+  const { token } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
-    if (accessToken) {
+    if (token) {
       router.replace("/facilities");
     } else {
-      router.replace("/auth/login");
+      router.replace("/(auth)/login");
     }
-  }, [accessToken]);
+  }, [token]);
 
   return null;
 }

@@ -1,12 +1,19 @@
 import * as SecureStore from "expo-secure-store";
 import { create } from "zustand";
-
+import { getProfile } from "../lib/auth";
+import type { AuthTokens, User } from "./types";
 interface AuthState {
-  accessToken: string | null;
+  accessToken: AuthTokens | null;
   user: any | null;
+  token: string | null;
+  setAuth: (token: string, user: any) => Promise<void>;
+  setUser: (u: User | null) => void;
+  setTokens: (t: AuthTokens | null) => void;
+  reset: () => void;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   restoreToken: () => Promise<void>;
+  hydrateUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -38,6 +45,15 @@ export const useAuthStore = create<AuthState>((set) => ({
       return false;
     }
   },
+  token: null,
+  setUser: (user) => set({ user }),
+  setAuth: async (token, user) => {
+    await SecureStore.setItemAsync("accessToken", token);
+    await SecureStore.setItemAsync("token", token);
+    set({ token, user });
+  },
+  setTokens: (accessToken) => set({ accessToken }),
+  reset: () => set({ user: null, accessToken: null }),
 
   logout: async () => {
     await SecureStore.deleteItemAsync("accessToken");
@@ -51,5 +67,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     const user = userStr ? JSON.parse(userStr) : null;
 
     set({ accessToken: token, user });
+  },
+  hydrateUser: async () => {
+    const token = await SecureStore.getItemAsync("token");
+    if (!token) return;
+
+    try {
+      const user = await getProfile(token);
+      set({ token, user });
+    } catch {
+      await SecureStore.deleteItemAsync("token");
+      set({ token: null, user: null });
+    }
   },
 }));

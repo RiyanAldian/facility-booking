@@ -19,3 +19,12 @@ export const LoginSchemaType = z.object({
 });
 
 export type LoginSchemaType = z.infer<typeof loginSchema>;
+
+export const profileSchema = z.object({
+  name: z.string().min(2).optional(),
+  email: z.string().email().optional(),
+  currentPassword: z.string().min(6).optional(),
+  newPassword: z.string().min(6).optional(),
+});
+
+export type ProfileSchema = z.infer<typeof profileSchema>;

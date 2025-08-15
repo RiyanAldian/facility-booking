@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { Button, Text, TextInput, View } from "react-native";
-import { useAuthStore } from "../../lib/authStore";
+import { loginApi } from "../../lib/auth";
 import { registerSchema, RegisterSchema } from "../../lib/validation";
 
 export default function RegisterScreen() {
@@ -15,7 +15,7 @@ export default function RegisterScreen() {
     resolver: zodResolver(registerSchema),
   });
 
-  const { login } = useAuthStore();
+  // const { login } = useAuthStore();
 
   const onSubmit = async (data: RegisterSchema) => {
     try {
@@ -38,7 +38,7 @@ export default function RegisterScreen() {
 
       // Simpan token jika ada
       if (result?.accessToken) {
-        await login(result.email, result.password);
+        await loginApi(result.email, result.password);
       }
 
       // Pindah ke halaman facilities

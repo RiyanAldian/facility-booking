@@ -1,34 +1,49 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, Button, Text, TextInput, View } from "react-native";
-import { z } from "zod";
+import { updateProfile } from "../../lib/auth";
 import { useAuthStore } from "../../lib/authStore";
-
-const profileSchema = z.object({
-  name: z.string().min(2).optional(),
-  email: z.string().email().optional(),
-  password: z.string().min(6).optional(),
-});
-
-type ProfileForm = z.infer<typeof profileSchema>;
+import { ProfileSchema, profileSchema } from "../../lib/validation";
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
+
   // console.log(user?.name);
   const logout = () => useAuthStore.getState().logout();
   const {
     register,
     setValue,
+    reset,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ProfileForm>({
+  } = useForm<ProfileSchema>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { name: user?.name, email: user?.email },
+    defaultValues: {
+      name: "",
+      email: "",
+      currentPassword: "",
+      newPassword: "",
+    },
   });
 
-  const onSubmit = async (data: ProfileForm) => {
+  // 🔹 Update form kalau user berubah
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || "",
+        email: user.email || "",
+        currentPassword: "",
+        newPassword: "",
+      });
+    }
+  }, [user, reset]);
+
+  const onSubmit = async (data: ProfileSchema) => {
     try {
-      // await updateProfile(data);
+      const res = await updateProfile(data);
+      setUser(data);
       Alert.alert("Berhasil", "Profil diperbarui");
     } catch (e) {
       Alert.alert("Gagal", "Tidak bisa memperbarui profil");
@@ -41,6 +56,7 @@ export default function ProfileScreen() {
       <Text>Nama</Text>
       <TextInput
         {...register("name")}
+        defaultValue={user?.name || ""}
         onChangeText={(t) => setValue("name", t)}
         style={{ borderWidth: 1, padding: 10 }}
       />
@@ -51,23 +67,38 @@ export default function ProfileScreen() {
       <Text>Email</Text>
       <TextInput
         {...register("email")}
+        editable={false}
         onChangeText={(t) => setValue("email", t)}
         style={{ borderWidth: 1, padding: 10 }}
+        value={user?.email}
       />
       {errors.email && (
         <Text style={{ color: "red" }}>{errors.email.message as string}</Text>
       )}
 
-      <Text>Password (opsional, untuk ganti)</Text>
+      <Text>Password</Text>
       <TextInput
-        {...register("password")}
-        onChangeText={(t) => setValue("password", t)}
+        {...register("currentPassword")}
+        onChangeText={(t) => setValue("currentPassword", t)}
         secureTextEntry
         style={{ borderWidth: 1, padding: 10 }}
       />
-      {errors.password && (
+      {errors.newPassword && (
         <Text style={{ color: "red" }}>
-          {errors.password.message as string}
+          {errors.newPassword.message as string}
+        </Text>
+      )}
+
+      <Text>Password Baru</Text>
+      <TextInput
+        {...register("newPassword")}
+        onChangeText={(t) => setValue("newPassword", t)}
+        secureTextEntry
+        style={{ borderWidth: 1, padding: 10 }}
+      />
+      {errors.newPassword && (
+        <Text style={{ color: "red" }}>
+          {errors.newPassword.message as string}
         </Text>
       )}
 

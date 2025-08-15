@@ -1,8 +1,8 @@
+import { loginApi } from "@/lib/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { Button, Text, TextInput, View } from "react-native";
-import { loginApi } from "../../lib/auth";
 import { useAuthStore } from "../../lib/authStore";
 import { loginSchema, LoginSchema } from "../../lib/validation";
 
@@ -21,8 +21,8 @@ export default function LoginScreen() {
   const onSubmit = async (data: LoginSchema) => {
     try {
       const res = await loginApi(data.email, data.password);
-      // console.log(res.user);
       await useAuthStore.getState().setAuth(res.accessToken, res.user);
+
       router.replace("../(app)/facilities"); // Redirect ke home
     } catch {
       alert("Email atau password salah");

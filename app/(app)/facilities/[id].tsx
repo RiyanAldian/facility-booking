@@ -68,7 +68,8 @@ export default function FacilityDetailScreen() {
       });
       setAvailability(res.data);
     } catch (error) {
-      console.error("Error fetching availability:", error);
+      // console.error("Error fetching availability:", error);
+      setAvailability([]);
     } finally {
       setLoadingAvailability(false);
     }

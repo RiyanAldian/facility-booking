@@ -3,7 +3,15 @@ import { Picker } from "@react-native-picker/picker";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
-import { ActivityIndicator, Button, FlatList, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Button,
+  FlatList,
+  Text,
+  View,
+} from "react-native";
+import api from "../../lib/api";
 
 export default function BookingListScreen() {
   const [status, setStatus] = useState<string | undefined>();
@@ -29,7 +37,29 @@ export default function BookingListScreen() {
       return res.data;
     },
   });
-  console.log(data, "adsw");
+  const cancelBooking = async (id: number) => {
+    Alert.alert(
+      "Cancel Booking",
+      "Are you sure you want to cancel this booking?",
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Yes",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.delete(`/facilities/bookings/${id}`);
+              Alert.alert("Success", "Booking cancelled.");
+              refetch(); // ambil data terbaru
+            } catch (err) {
+              console.error("Error cancelling booking:", err);
+              Alert.alert("Error", "Failed to cancel booking.");
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
@@ -82,6 +112,11 @@ export default function BookingListScreen() {
               </Text>
               <Text>Status: {item.status}</Text>
               <Text>Catatan: {item.notes || "-"}</Text>
+              <Button
+                title="Cancel"
+                color="red"
+                onPress={() => cancelBooking(item.id)}
+              />
             </View>
           )}
         />

@@ -25,14 +25,15 @@ export default function BookFacilityScreen() {
     if (selectedFacility) {
       const dateStr = date.toISOString().split("T")[0];
       api
-        .get(`/facilities/${selectedFacility}/availability`, {
-          params: { date: dateStr },
+        .get(`/facilities/${selectedFacility}/availability/daily`, {
+          params: { date: dateStr, id: selectedFacility },
         })
         .then((res) => {
-          setAvailableHours(res.data.availableHours || []);
+          // console.log(res.data.timeSlots[0]);
+          setAvailableHours(res.data.timeSlots || []);
         });
     }
-  }, [selectedFacility, date]);
+  }, [selectedFacility, date, availableHours]);
 
   const handleSubmit = async () => {
     const today = new Date();
@@ -86,7 +87,7 @@ export default function BookFacilityScreen() {
             setShowDatePicker(false);
             if (selectedDate) setDate(selectedDate);
           }}
-          minimumDate={new Date()} // tidak bisa pilih tanggal sebelum hari ini
+          minimumDate={new Date()}
         />
       )}
 
@@ -96,8 +97,8 @@ export default function BookFacilityScreen() {
         onValueChange={(val) => setSelectedHour(val)}
       >
         <Picker.Item label="-- Pilih Jam --" value="" />
-        {availableHours.map((hour: number) => (
-          <Picker.Item key={hour} label={`${hour}:00`} value={hour} />
+        {availableHours.map((item, hour: number) => (
+          <Picker.Item key={hour} label={`${item.hour}:00`} value={item.hour} />
         ))}
       </Picker>
 

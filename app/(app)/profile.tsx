@@ -1,9 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Alert, Button, Text, TextInput, View } from "react-native";
+import { z } from "zod";
 import { updateProfile } from "../../lib/auth";
 import { useAuthStore } from "../../lib/store";
-import { ProfileSchema, profileSchema } from "../../lib/validation";
+
+const profileSchema = z.object({
+  name: z.string().min(2).optional(),
+  email: z.string().email().optional(),
+  password: z.string().min(6).optional(),
+});
+
+type ProfileForm = z.infer<typeof profileSchema>;
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
@@ -14,6 +22,7 @@ export default function ProfileScreen() {
   const {
     register,
     setValue,
+    reset,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },

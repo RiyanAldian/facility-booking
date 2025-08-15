@@ -52,3 +52,10 @@ export interface DailyAvailabilityResponse {
   date: string; // YYYY-MM-DD
   slots: DailyAvailabilitySlot[];
 }
+
+export interface updateProfile {
+  name: string;
+  email: string;
+  currentPassword: string;
+  newPassword: string;
+}

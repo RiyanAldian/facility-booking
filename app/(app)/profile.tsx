@@ -1,17 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, Button, Text, TextInput, View } from "react-native";
-import { z } from "zod";
 import { logout, updateProfile } from "../../lib/auth";
 import { useAuthStore } from "../../lib/store";
+import { ProfileSchema, profileSchema } from "../../lib/validation";
 
-const profileSchema = z.object({
-  name: z.string().min(2).optional(),
-  email: z.string().email().optional(),
-  password: z.string().min(6).optional(),
-});
-
-type ProfileForm = z.infer<typeof profileSchema>;
+// type ProfileForm = z.infer<typeof profileSchema>;
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
@@ -19,11 +14,30 @@ export default function ProfileScreen() {
     register,
     setValue,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
-  } = useForm<ProfileForm>({
+  } = useForm<ProfileSchema>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { name: user?.name, email: user?.email },
+    // defaultValues: { name: user?.name, email: user?.email },
+    defaultValues: {
+      name: "",
+      email: "",
+      currentPassword: "",
+      newPassword: "",
+    },
   });
+
+  // 🔹 Update form kalau user berubah
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || "",
+        email: user.email || "",
+        currentPassword: "",
+        newPassword: "",
+      });
+    }
+  }, [user, reset]);
 
   const onSubmit = async (data: ProfileForm) => {
     try {
@@ -40,6 +54,7 @@ export default function ProfileScreen() {
       <Text>Nama</Text>
       <TextInput
         {...register("name")}
+        defaultValue={user?.name || ""}
         onChangeText={(t) => setValue("name", t)}
         style={{ borderWidth: 1, padding: 10 }}
       />
@@ -50,23 +65,38 @@ export default function ProfileScreen() {
       <Text>Email</Text>
       <TextInput
         {...register("email")}
+        editable={false}
         onChangeText={(t) => setValue("email", t)}
         style={{ borderWidth: 1, padding: 10 }}
+        value={user?.email}
       />
       {errors.email && (
         <Text style={{ color: "red" }}>{errors.email.message as string}</Text>
       )}
 
-      <Text>Password (opsional, untuk ganti)</Text>
+      <Text>Password Saat Ini</Text>
       <TextInput
-        {...register("password")}
-        onChangeText={(t) => setValue("password", t)}
+        {...register("currentPassword")}
+        onChangeText={(t) => setValue("currentPassword", t)}
         secureTextEntry
         style={{ borderWidth: 1, padding: 10 }}
       />
-      {errors.password && (
+      {errors.currentPassword && (
         <Text style={{ color: "red" }}>
-          {errors.password.message as string}
+          {errors.currentPassword.message as string}
+        </Text>
+      )}
+
+      <Text>Password Baru</Text>
+      <TextInput
+        {...register("newPassword")}
+        onChangeText={(t) => setValue("newPassword", t)}
+        secureTextEntry
+        style={{ borderWidth: 1, padding: 10 }}
+      />
+      {errors.newPassword && (
+        <Text style={{ color: "red" }}>
+          {errors.newPassword.message as string}
         </Text>
       )}
 

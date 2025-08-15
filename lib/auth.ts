@@ -1,7 +1,12 @@
 import * as SecureStore from "expo-secure-store";
 import api from "./api";
 import { useAuthStore } from "./store";
-import type { AuthResponse, RegisterPayload } from "./types";
+import type {
+  AuthResponse,
+  LoginPayload,
+  RegisterPayload,
+  updateProfile,
+} from "./types";
 
 export async function hydrateAuthFromStorage() {
   const [accessToken, refreshToken] = await Promise.all([
@@ -39,17 +44,12 @@ export async function login(payload: LoginPayload) {
       body: JSON.stringify(payload),
     });
 
-    console.log("Status:", res.status);
-    console.log("OK?:", res.ok);
     const text = await res.text();
-    console.log("Response body:", text);
-
     if (!res.ok) return false;
 
     const data = JSON.parse(text);
-    console.log("Parsed data:", data);
 
-    const { accessToken, user } = data; // sesuaikan dengan format API
+    const { accessToken, user, refreshToken } = data; // sesuaikan dengan format API
 
     if (!accessToken) {
       console.error("❌ Token tidak ditemukan di respons API");
@@ -59,11 +59,12 @@ export async function login(payload: LoginPayload) {
     // Simpan ke SecureStore
     await SecureStore.setItemAsync("accessToken", accessToken);
     await SecureStore.setItemAsync("user", JSON.stringify(user));
+    await SecureStore.setItemAsync("refreshToken", refreshToken);
 
     // Update store
     useAuthStore.getState().setTokens({
       accessToken: accessToken,
-      refreshToken: null,
+      refreshToken: refreshToken,
     });
     useAuthStore.getState().setUser(user);
 
@@ -83,10 +84,30 @@ export async function logout() {
   useAuthStore.getState().reset();
 }
 
-export async function updateProfile(
-  data: Partial<{ name: string; email: string; password: string }>
-) {
-  const res = await api.put<User>("/auth/profile", data);
-  useAuthStore.getState().setUser(res.data);
-  return res.data;
+export async function updateProfile(payload: updateProfile) {
+  try {
+    const res = await fetch("https://booking-api.hyge.web.id/auth/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const text = await res.text();
+    if (!res.ok) return false;
+
+    const data = JSON.parse(text);
+
+    console.log(data, "-----");
+    const { accessToken, user } = data;
+
+    console.log("✅ State setelah login:", useAuthStore.getState());
+
+    await SecureStore.setItemAsync("user", JSON.stringify(user || {}));
+
+    useAuthStore.getState().setUser(user);
+    return true;
+  } catch (err) {
+    console.error("Update error:", err);
+    return false;
+  }
 }

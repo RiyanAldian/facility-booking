@@ -52,9 +52,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (!loading) {
       if (token) {
-        console.log(token, "token1");
-
-        router.replace("/(app)/profile"); // if logged in
+        router.replace("/MenuScreen"); // if logged in
       } else {
         router.replace("/(auth)/login"); // if not logged in
       }
@@ -62,7 +60,7 @@ export default function RootLayout() {
   }, [loading, token]);
 
   if (loading) {
-    return null; // bisa diganti SplashScreen
+    return null;
   }
   return (
     <QueryClientProvider client={queryClient}>

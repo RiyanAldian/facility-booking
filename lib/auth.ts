@@ -37,14 +37,14 @@ export async function register(payload: RegisterPayload) {
 }
 
 export async function loginApi(email: string, password: string) {
-  const res = await api.post("login", { email, password });
+  const res = await api.post("auth/login", { email, password });
 
   return res.data;
 }
 
 export async function login(payload: LoginPayload) {
   try {
-    const res = await api.post("login", { payload });
+    const res = await api.post("auth/login", { payload });
 
     const data = JSON.parse(res.data);
 

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
-import { Button, FlatList, RefreshControl, Text, View } from "react-native";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import { FacilityItem } from "../../components/FacilityItem";
 import { SearchBar } from "../../components/SearchBar";
 
@@ -45,6 +45,7 @@ export default function FacilitiesScreen() {
   const query = useQuery({
     queryKey: ["facilities", search],
     queryFn: () => fetchFacilities(search),
+    enabled: true,
   });
 
   return (
@@ -58,7 +59,7 @@ export default function FacilitiesScreen() {
         }}
       >
         <Text style={{ fontSize: 20, fontWeight: "700" }}>Fasilitas</Text>
-        <Button title="Profil" onPress={() => router.push("/(app)/profile")} />
+        {/* <Button title="Profil" onPress={() => router.push("/(app)/profile")} /> */}
       </View>
 
       <SearchBar value={search} onChange={setSearch} />
@@ -69,7 +70,7 @@ export default function FacilitiesScreen() {
         renderItem={({ item }) => (
           <FacilityItem
             facility={item}
-            // onPress={() => router.push(`/(app)/facilities/${item.id}`)}
+            onPress={() => router.push(`/(app)/facilities/${item.id}`)}
           />
         )}
         refreshControl={

@@ -3,7 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import { useAuthStore } from "./store";
 import type { AuthResponse } from "./types";
 
-export const API_BASE_URL = "https://booking-api.hyge.web.id/auth"; // <-- ganti ke base URL backend
+export const API_BASE_URL = "https://booking-api.hyge.web.id/"; // <-- ganti ke base URL backend
 
 const api = axios.create({
   baseURL: API_BASE_URL,

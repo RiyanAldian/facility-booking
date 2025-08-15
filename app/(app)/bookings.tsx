@@ -1,4 +1,5 @@
 // app/(app)/bookings/index.tsx
+import { cancelBooking } from "@/lib/bookings";
 import { Picker } from "@react-native-picker/picker";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -11,7 +12,6 @@ import {
   Text,
   View,
 } from "react-native";
-import api from "../../lib/api";
 
 export default function BookingListScreen() {
   const [status, setStatus] = useState<string | undefined>();
@@ -37,7 +37,7 @@ export default function BookingListScreen() {
       return res.data;
     },
   });
-  const cancelBooking = async (id: number) => {
+  const cancel = async (id: number) => {
     Alert.alert(
       "Cancel Booking",
       "Are you sure you want to cancel this booking?",
@@ -48,7 +48,7 @@ export default function BookingListScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await api.delete(`/facilities/bookings/${id}`);
+              await cancelBooking(id);
               Alert.alert("Success", "Booking cancelled.");
               refetch(); // ambil data terbaru
             } catch (err) {
@@ -115,7 +115,7 @@ export default function BookingListScreen() {
               <Button
                 title="Cancel"
                 color="red"
-                onPress={() => cancelBooking(item.id)}
+                onPress={() => cancel(item.id)}
               />
             </View>
           )}

@@ -58,6 +58,7 @@ export default function BookFacilityScreen() {
     } catch (err: any) {
       Alert.alert("Gagal", err.response?.data?.message || "Terjadi kesalahan");
     }
+    setDate(new Date());
   };
 
   return (

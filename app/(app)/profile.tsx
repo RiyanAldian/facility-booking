@@ -1,10 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, Button, Text, TextInput, View } from "react-native";
+import { z } from "zod";
 import { updateProfile } from "../../lib/auth";
-import { useAuthStore } from "../../lib/authStore";
-import { ProfileSchema, profileSchema } from "../../lib/validation";
+import { useAuthStore } from "../../lib/store";
+
+const profileSchema = z.object({
+  name: z.string().min(2).optional(),
+  email: z.string().email().optional(),
+  password: z.string().min(6).optional(),
+});
+
+type ProfileForm = z.infer<typeof profileSchema>;
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
@@ -17,28 +24,12 @@ export default function ProfileScreen() {
     setValue,
     reset,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<ProfileSchema>({
     resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      currentPassword: "",
-      newPassword: "",
-    },
+    defaultValues: { name: user?.name, email: user?.email },
   });
-
-  // 🔹 Update form kalau user berubah
-  useEffect(() => {
-    if (user) {
-      reset({
-        name: user.name || "",
-        email: user.email || "",
-        currentPassword: "",
-        newPassword: "",
-      });
-    }
-  }, [user, reset]);
 
   const onSubmit = async (data: ProfileSchema) => {
     try {
@@ -76,20 +67,7 @@ export default function ProfileScreen() {
         <Text style={{ color: "red" }}>{errors.email.message as string}</Text>
       )}
 
-      <Text>Password</Text>
-      <TextInput
-        {...register("currentPassword")}
-        onChangeText={(t) => setValue("currentPassword", t)}
-        secureTextEntry
-        style={{ borderWidth: 1, padding: 10 }}
-      />
-      {errors.newPassword && (
-        <Text style={{ color: "red" }}>
-          {errors.newPassword.message as string}
-        </Text>
-      )}
-
-      <Text>Password Baru</Text>
+      <Text>Password (opsional, untuk ganti)</Text>
       <TextInput
         {...register("newPassword")}
         onChangeText={(t) => setValue("newPassword", t)}

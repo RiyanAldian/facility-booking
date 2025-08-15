@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { Button, Text, TextInput, View } from "react-native";
-import { loginApi } from "../../lib/auth";
 import { registerSchema, RegisterSchema } from "../../lib/validation";
 
 export default function RegisterScreen() {
@@ -32,17 +31,8 @@ export default function RegisterScreen() {
         alert(err.message || "Registrasi gagal");
         return;
       }
-
-      const result = await res.json();
-      console.log("Register success:", result);
-
-      // Simpan token jika ada
-      if (result?.accessToken) {
-        await loginApi(result.email, result.password);
-      }
-
       // Pindah ke halaman facilities
-      router.replace("/(app)/facilities");
+      router.replace("/(auth)/login");
     } catch (error) {
       console.error(error);
       alert("Terjadi kesalahan");

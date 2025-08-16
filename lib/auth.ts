@@ -45,15 +45,11 @@ export async function login(payload: LoginPayload) {
       body: JSON.stringify(payload),
     });
 
-    console.log("Status:", res.status);
-    console.log("OK?:", res.ok);
     const text = await res.text();
-    console.log("Response body:", text);
 
     if (!res.ok) return false;
 
     const data = JSON.parse(text);
-    console.log("Parsed data:", data);
 
     const { accessToken, user, refreshToken } = data; // sesuaikan dengan format API
 

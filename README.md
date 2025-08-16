@@ -69,4 +69,3 @@ yarn start
 - [Expo Router](https://expo.github.io/router/)
 - [React Query](https://tanstack.com/query/latest)
 - [React Native Paper](https://callstack.github.io/react-native-paper/)
-- API Booking: `https://booking-api.hyge.web.id`

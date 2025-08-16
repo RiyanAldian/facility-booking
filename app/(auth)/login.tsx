@@ -23,7 +23,7 @@ export default function LoginScreen() {
       const res = await loginApi(data.email, data.password);
       await useAuthStore.getState().setAuth(res.accessToken, res.user);
 
-      router.replace("../MenuScreen"); // Redirect ke home
+      router.replace("../(tabs)"); // Redirect ke home
     } catch {
       alert("Email atau password salah");
     }

@@ -50,7 +50,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={{ padding: 16, gap: 8 }}>
+    <View style={{ padding: 50, gap: 8 }}>
       <Text style={{ fontSize: 22, fontWeight: "700" }}>Profil</Text>
       <Text>Nama</Text>
       <TextInput

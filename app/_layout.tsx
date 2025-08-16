@@ -52,7 +52,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (!loading) {
       if (token) {
-        router.replace("/MenuScreen"); // if logged in
+        router.replace("/(tabs)/index"); // if logged in
       } else {
         router.replace("/(auth)/login"); // if not logged in
       }

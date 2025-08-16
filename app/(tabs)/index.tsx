@@ -12,23 +12,16 @@ export default function MenuScreen() {
 
       <TouchableOpacity
         style={styles.menuButton}
-        onPress={() => router.push("/(app)/profile")}
-      >
-        <Text style={styles.menuText}>Profile</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.menuButton}
         onPress={() => router.push("/(app)/facilities")}
       >
-        <Text style={styles.menuText}>🏢 Facility List</Text>
+        <Text style={styles.menuText}> Facility List</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.menuButton}
         onPress={() => router.push("/(app)/bookings")}
       >
-        <Text style={styles.menuText}>📅 My Bookings</Text>
+        <Text style={styles.menuText}> My Bookings</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.menuButton}

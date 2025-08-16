@@ -2,7 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { Button, Card, Divider, Text, TextInput } from "react-native-paper";
 import { updateProfile } from "../../lib/auth";
 import { useAuthStore } from "../../lib/authStore";
 import { ProfileSchema, profileSchema } from "../../lib/validation";
@@ -11,11 +12,12 @@ export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const router = useRouter();
+
   const logout = () => {
     useAuthStore.getState().logout();
-    console.log();
     router.replace("../(auth)/login");
   };
+
   const {
     register,
     setValue,
@@ -45,8 +47,8 @@ export default function ProfileScreen() {
 
   const onSubmit = async (data: ProfileSchema) => {
     try {
-      const res = await updateProfile(data);
-      setUser(data);
+      await updateProfile(data);
+      setUser({ ...user, name: data.name });
       Alert.alert("Berhasil", "Profil diperbarui");
     } catch (e) {
       Alert.alert("Gagal", "Tidak bisa memperbarui profil");
@@ -54,73 +56,96 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={{ fontSize: 22, fontWeight: "700" }}>Profil</Text>
-      <Text>Nama</Text>
-      <TextInput
-        {...register("name")}
-        defaultValue={user?.name || ""}
-        onChangeText={(t) => setValue("name", t)}
-        style={{ borderWidth: 1, padding: 10 }}
-      />
-      {errors.name && (
-        <Text style={{ color: "red" }}>{errors.name.message as string}</Text>
-      )}
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ padding: 16 }}
+    >
+      {/* Bagian Data Profil */}
+      <Card style={styles.card}>
+        <Card.Title title="Informasi Profil" />
+        <Card.Content>
+          <TextInput
+            label="Nama"
+            mode="outlined"
+            {...register("name")}
+            defaultValue={user?.name || ""}
+            onChangeText={(t) => setValue("name", t)}
+            error={!!errors.name}
+          />
+          {errors.name && (
+            <Text style={styles.errorText}>
+              {errors.name.message as string}
+            </Text>
+          )}
 
-      <Text>Email</Text>
-      <TextInput
-        {...register("email")}
-        editable={false}
-        onChangeText={(t) => setValue("email", t)}
-        style={{ borderWidth: 1, padding: 10 }}
-        value={user?.email}
-      />
-      {errors.email && (
-        <Text style={{ color: "red" }}>{errors.email.message as string}</Text>
-      )}
+          <TextInput
+            label="Email"
+            mode="outlined"
+            value={user?.email || ""}
+            editable={false}
+          />
+        </Card.Content>
+      </Card>
 
-      <Text>Password</Text>
-      <TextInput
-        {...register("currentPassword")}
-        onChangeText={(t) => setValue("currentPassword", t)}
-        secureTextEntry
-        style={{ borderWidth: 1, padding: 10 }}
-      />
-      {errors.newPassword && (
-        <Text style={{ color: "red" }}>
-          {errors.newPassword.message as string}
-        </Text>
-      )}
+      {/* Bagian Password */}
+      <Card style={styles.card}>
+        <Card.Title title="Ubah Password" />
+        <Card.Content>
+          <TextInput
+            label="Password Saat Ini"
+            mode="outlined"
+            {...register("currentPassword")}
+            secureTextEntry
+            onChangeText={(t) => setValue("currentPassword", t)}
+          />
 
-      <Text>Password Baru</Text>
-      <TextInput
-        {...register("newPassword")}
-        onChangeText={(t) => setValue("newPassword", t)}
-        secureTextEntry
-        style={{ borderWidth: 1, padding: 10 }}
-      />
-      {errors.newPassword && (
-        <Text style={{ color: "red" }}>
-          {errors.newPassword.message as string}
-        </Text>
-      )}
+          <TextInput
+            label="Password Baru"
+            mode="outlined"
+            {...register("newPassword")}
+            secureTextEntry
+            onChangeText={(t) => setValue("newPassword", t)}
+            error={!!errors.newPassword}
+            style={{ marginTop: 8 }}
+          />
+          {errors.newPassword && (
+            <Text style={styles.errorText}>
+              {errors.newPassword.message as string}
+            </Text>
+          )}
+        </Card.Content>
+      </Card>
 
-      <Button
-        title={isSubmitting ? "Menyimpan…" : "Simpan"}
-        onPress={handleSubmit(onSubmit)}
-      />
-      <View style={{ height: 8 }} />
-      <Button title="Logout" onPress={logout} />
-    </View>
+      {/* Tombol Aksi */}
+      <View style={{ marginTop: 16 }}>
+        <Button
+          mode="contained"
+          onPress={handleSubmit(onSubmit)}
+          loading={isSubmitting}
+        >
+          Simpan
+        </Button>
+        <Divider style={{ marginVertical: 8 }} />
+        <Button mode="outlined" onPress={logout} textColor="red">
+          Logout
+        </Button>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     backgroundColor: "#f5f5f5",
-    padding: 50,
-    gap: 8,
+    paddingTop: 50,
+  },
+  card: {
+    marginBottom: 16,
+  },
+  errorText: {
+    color: "red",
+    marginTop: 4,
+    fontSize: 12,
   },
 });

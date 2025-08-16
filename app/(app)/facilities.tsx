@@ -3,8 +3,7 @@ import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import { FlatList, RefreshControl } from "react-native";
-import { Searchbar, Surface, Text } from "react-native-paper";
-import { FacilityItem } from "../../components/FacilityItem";
+import { Button, Card, Searchbar, Surface, Text } from "react-native-paper";
 
 async function fetchFacilities(search: string) {
   try {
@@ -66,10 +65,27 @@ export default function FacilitiesScreen() {
         data={query.data}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-          <FacilityItem
-            facility={item}
+          <Card
+            style={{ marginVertical: 6, borderRadius: 12, elevation: 2 }}
             onPress={() => router.push(`/(app)/facilities/${item.id}`)}
-          />
+          >
+            <Card.Title
+              title={item.name}
+              subtitle={item.location}
+              titleStyle={{ fontWeight: "bold" }}
+            />
+            <Card.Content>
+              <Text variant="bodyMedium">{item.description}</Text>
+            </Card.Content>
+            <Card.Actions>
+              <Button
+                mode="contained"
+                onPress={() => router.push(`/(app)/facilities/${item.id}`)}
+              >
+                Lihat Detail
+              </Button>
+            </Card.Actions>
+          </Card>
         )}
         refreshControl={
           <RefreshControl

@@ -36,7 +36,7 @@ A mobile application built with **React Native** and **Expo Router** to manage f
 - **Picker:** `@react-native-picker/picker`
 - **State Management:** Zustand (`useAuthStore`)
 - **UI:** react-native-paper"
-- **Router:** expo-router("useRouter")
+- **Router:** expo-router(`useRouter`)
 - etc.
 ---
 

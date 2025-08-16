@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-// import api from "../api"; // axios instance
+import api from "../../lib/api";
 
 export default function FacilityDetailScreen() {
   const route = useRoute();
@@ -34,15 +34,8 @@ export default function FacilityDetailScreen() {
   async function fetchFacility() {
     try {
       setLoadingFacility(true);
-      // const res = await api.get(`/facilities/${id}`);
-      const res = await fetch(
-        `https://booking-api.hyge.web.id/api/facilities/${id}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      const data = await res.json();
+      const res = await api.get(`/facilities/${id}`);
+      const data = res.data;
       setFacility(data);
     } catch (error) {
       console.error("Error fetching facility:", error);

@@ -1,17 +1,16 @@
-// app/(app)/bookings/index.tsx
-import { cancelBooking } from "@/lib/bookings";
 import { Picker } from "@react-native-picker/picker";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useState } from "react";
+import { Alert, FlatList, SafeAreaView, View } from "react-native";
 import {
   ActivityIndicator,
-  Alert,
   Button,
-  FlatList,
+  Card,
+  IconButton,
   Text,
-  View,
-} from "react-native";
+} from "react-native-paper";
+import api from "../../lib/api";
+import { cancelBooking } from "../../lib/bookings";
 
 export default function BookingListScreen() {
   const [status, setStatus] = useState<string | undefined>();
@@ -22,22 +21,20 @@ export default function BookingListScreen() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["bookings", status, sortDirection, page],
     queryFn: async () => {
-      const res = await axios.get(
-        "https://booking-api.hyge.web.id/facilities/bookings/my",
-        {
-          params: {
-            status: status || "booked",
-            sortBy: "createdAt",
-            sortDirection: sortDirection || "desc",
-            page: page || 1,
-            pageSize: pageSize || 10,
-          },
-        }
-      );
+      const res = await api.get("/facilities/bookings/my", {
+        params: {
+          status: status || "booked",
+          sortBy: "createdAt",
+          sortDirection: sortDirection || "desc",
+          page,
+          pageSize,
+        },
+      });
       return res.data;
     },
   });
-  const cancel = async (id: number) => {
+
+  const handleCancel = async (id: number) => {
     Alert.alert(
       "Cancel Booking",
       "Are you sure you want to cancel this booking?",
@@ -62,82 +59,122 @@ export default function BookingListScreen() {
   };
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      {/* Filter Status */}
-      <Picker
-        selectedValue={status}
-        onValueChange={(value) => {
-          setStatus(value || undefined);
-          setPage(1);
-        }}
-      >
-        <Picker.Item label="All" value="" />
-        <Picker.Item label="Booked" value="booked" />
-        <Picker.Item label="Cancelled" value="cancelled" />
-      </Picker>
-
-      {/* Sort Direction */}
-      <Picker
-        selectedValue={sortDirection}
-        onValueChange={(value) => {
-          setSortDirection(value);
-          setPage(1);
-        }}
-      >
-        <Picker.Item label="Descending" value="desc" />
-        <Picker.Item label="Ascending" value="asc" />
-      </Picker>
-
-      {/* Booking List */}
-      {isLoading ? (
-        <ActivityIndicator size="large" />
-      ) : (
-        <FlatList
-          data={data.bookings}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                padding: 12,
-                borderBottomWidth: 1,
-                borderColor: "#ddd",
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f9f9f9" }}>
+      <Text style={{ fontSize: 20, fontWeight: "bold", padding: 16 }}>
+        My Booking
+      </Text>
+      {/* Konten */}
+      <View style={{ flex: 1, padding: 16 }}>
+        {/* Filter Section */}
+        <Card style={{ padding: 12, marginBottom: 16 }}>
+          <Text variant="titleMedium" style={{ marginBottom: 8 }}>
+            Filter
+          </Text>
+          {/* Picker Status */}
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#ccc",
+              borderRadius: 6,
+              marginBottom: 8,
+            }}
+          >
+            <Picker
+              selectedValue={status}
+              onValueChange={(value) => {
+                setStatus(value || undefined);
+                setPage(1);
               }}
             >
-              <Text style={{ fontWeight: "bold" }}>
-                Facility #{item.facilityId}
-              </Text>
-              <Text>
-                {new Date(item.bookingDate).toLocaleDateString("id-ID")} |{" "}
-                {item.startHour}:00 - {item.endHour}:00
-              </Text>
-              <Text>Status: {item.status}</Text>
-              <Text>Catatan: {item.notes || "-"}</Text>
-              <Button
-                title="Cancel"
-                color="red"
-                onPress={() => cancel(item.id)}
-              />
-            </View>
-          )}
-        />
-      )}
+              <Picker.Item label="All" value="" />
+              <Picker.Item label="Booked" value="booked" />
+              <Picker.Item label="Cancelled" value="cancelled" />
+            </Picker>
+          </View>
 
-      {/* Pagination */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <Button
-          title="Prev"
-          onPress={() => setPage((p) => Math.max(p - 1, 1))}
-          disabled={page <= 1}
-        />
-        <Text>
-          Page {page} / {data?.totalPages || 1}
-        </Text>
-        <Button
-          title="Next"
-          onPress={() => setPage((p) => (data?.hasMore ? p + 1 : p))}
-          disabled={!data?.hasMore}
-        />
+          {/* Picker Sort */}
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#ccc",
+              borderRadius: 6,
+            }}
+          >
+            <Picker
+              selectedValue={sortDirection}
+              onValueChange={(value) => {
+                setSortDirection(value);
+                setPage(1);
+              }}
+            >
+              <Picker.Item label="Descending" value="desc" />
+              <Picker.Item label="Ascending" value="asc" />
+            </Picker>
+          </View>
+        </Card>
+
+        {/* Booking List */}
+        {isLoading ? (
+          <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+        ) : (
+          <FlatList
+            data={data?.bookings || []}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <Card style={{ marginBottom: 12 }}>
+                <Card.Title
+                  title={`Facility #${item.facilityId}`}
+                  subtitle={`${new Date(item.bookingDate).toLocaleDateString(
+                    "id-ID"
+                  )} | ${item.startHour}:00 - ${item.endHour}:00`}
+                  right={() =>
+                    item.status === "booked" && (
+                      <IconButton
+                        icon="close"
+                        iconColor="red"
+                        onPress={() => handleCancel(item.id)}
+                      />
+                    )
+                  }
+                />
+                <Card.Content>
+                  <Text>Status: {item.status}</Text>
+                  <Text>Catatan: {item.notes || "-"}</Text>
+                </Card.Content>
+              </Card>
+            )}
+          />
+        )}
+
+        {/* Pagination */}
+        {!isLoading && (
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginTop: 12,
+            }}
+          >
+            <Button
+              mode="outlined"
+              onPress={() => setPage((p) => Math.max(p - 1, 1))}
+              disabled={page <= 1}
+            >
+              Prev
+            </Button>
+            <Text variant="bodyMedium" style={{ alignSelf: "center" }}>
+              Page {page} / {data?.totalPages || 1}
+            </Text>
+            <Button
+              mode="outlined"
+              onPress={() => setPage((p) => (data?.hasMore ? p + 1 : p))}
+              disabled={!data?.hasMore}
+            >
+              Next
+            </Button>
+          </View>
+        )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

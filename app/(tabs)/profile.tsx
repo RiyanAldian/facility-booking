@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Alert, Button, Text, TextInput, View } from "react-native";
+import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
 import { updateProfile } from "../../lib/auth";
 import { useAuthStore } from "../../lib/authStore";
 import { ProfileSchema, profileSchema } from "../../lib/validation";
@@ -9,8 +10,12 @@ import { ProfileSchema, profileSchema } from "../../lib/validation";
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
-
-  const logout = () => useAuthStore.getState().logout();
+  const router = useRouter();
+  const logout = () => {
+    useAuthStore.getState().logout();
+    console.log();
+    router.replace("../(auth)/login");
+  };
   const {
     register,
     setValue,
@@ -27,7 +32,6 @@ export default function ProfileScreen() {
     },
   });
 
-  // 🔹 Update form kalau user berubah
   useEffect(() => {
     if (user) {
       reset({
@@ -50,7 +54,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={{ padding: 50, gap: 8 }}>
+    <View style={styles.container}>
       <Text style={{ fontSize: 22, fontWeight: "700" }}>Profil</Text>
       <Text>Nama</Text>
       <TextInput
@@ -110,3 +114,13 @@ export default function ProfileScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "#f5f5f5",
+    padding: 50,
+    gap: 8,
+  },
+});

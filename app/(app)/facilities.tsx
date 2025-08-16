@@ -2,22 +2,19 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
-import { FlatList, RefreshControl, Text, View } from "react-native";
+import { FlatList, RefreshControl } from "react-native";
+import { Searchbar, Surface, Text } from "react-native-paper";
 import { FacilityItem } from "../../components/FacilityItem";
-import { SearchBar } from "../../components/SearchBar";
 
 async function fetchFacilities(search: string) {
   try {
-    // Ambil token dari SecureStore
     const token = await SecureStore.getItemAsync("accessToken");
 
-    // Buat URL dengan query params jika ada pencarian
     const url = new URL("https://booking-api.hyge.web.id/facilities");
     if (search) {
       url.searchParams.append("search", search);
     }
 
-    // Fetch data
     const res = await fetch(url.toString(), {
       method: "GET",
       headers: {
@@ -26,14 +23,11 @@ async function fetchFacilities(search: string) {
       },
     });
 
-    console.log("Status:", res.status, "OK?:", res.ok);
     if (!res.ok) {
       throw new Error(`Gagal fetch facilities: ${res.status}`);
     }
 
-    const data = await res.json();
-    console.log("Facilities data:", data);
-    return data;
+    return await res.json();
   } catch (err) {
     console.error("Error getFacilities:", err);
     return [];
@@ -45,25 +39,29 @@ export default function FacilitiesScreen() {
   const query = useQuery({
     queryKey: ["facilities", search],
     queryFn: () => fetchFacilities(search),
-    enabled: true,
   });
 
   return (
-    <View style={{ flex: 1 }}>
-      <View
+    <Surface style={{ flex: 1 }}>
+      <Text
         style={{
-          padding: 12,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
+          fontSize: 24,
+          fontWeight: "bold",
+          padding: 16,
+          textAlign: "center",
         }}
       >
-        <Text style={{ fontSize: 20, fontWeight: "700" }}>Fasilitas</Text>
-        {/* <Button title="Profil" onPress={() => router.push("/(app)/profile")} /> */}
-      </View>
+        Daftar Fasilitas
+      </Text>
+      {/* Search Bar */}
+      <Searchbar
+        placeholder="Cari fasilitas..."
+        value={search}
+        onChangeText={setSearch}
+        style={{ margin: 12 }}
+      />
 
-      <SearchBar value={search} onChange={setSearch} />
-
+      {/* Facilities List */}
       <FlatList
         data={query.data}
         keyExtractor={(item) => String(item.id)}
@@ -81,10 +79,16 @@ export default function FacilitiesScreen() {
         }
         ListEmptyComponent={
           !query.isFetching ? (
-            <Text style={{ padding: 16 }}>Tidak ada data</Text>
+            <Text style={{ padding: 16, textAlign: "center" }}>
+              Tidak ada data
+            </Text>
           ) : null
         }
+        contentContainerStyle={{
+          paddingHorizontal: 12,
+          paddingBottom: 16,
+        }}
       />
-    </View>
+    </Surface>
   );
 }

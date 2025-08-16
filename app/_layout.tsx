@@ -42,7 +42,6 @@ export default function RootLayout() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Ambil token & user dari SecureStore saat pertama kali load
     (async () => {
       await hydrateUser();
       setLoading(false);
@@ -52,9 +51,9 @@ export default function RootLayout() {
   useEffect(() => {
     if (!loading) {
       if (token) {
-        router.replace("/(tabs)/index"); // if logged in
+        router.replace("/(tabs)/index");
       } else {
-        router.replace("/(auth)/login"); // if not logged in
+        router.replace("/(auth)/login");
       }
     }
   }, [loading, token]);

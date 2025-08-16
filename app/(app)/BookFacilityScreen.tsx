@@ -1,15 +1,16 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
-import { Alert, Button, Text, TextInput, View } from "react-native";
+import { View } from "react-native";
+import { Button, Card, Text, TextInput } from "react-native-paper";
 import api from "../../lib/api";
 
 export default function BookFacilityScreen() {
-  const [facilities, setFacilities] = useState([]);
+  const [facilities, setFacilities] = useState<any[]>([]);
   const [selectedFacility, setSelectedFacility] = useState("");
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [availableHours, setAvailableHours] = useState([]);
+  const [availableHours, setAvailableHours] = useState<any[]>([]);
   const [selectedHour, setSelectedHour] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -20,33 +21,29 @@ export default function BookFacilityScreen() {
     });
   }, []);
 
-  // Fetch daily availability when facility or date changes
+  // Fetch daily availability
   useEffect(() => {
-    if (selectedFacility) {
-      const dateStr = date.toISOString().split("T")[0];
-      api
-        .get(`/facilities/${selectedFacility}/availability/daily`, {
-          params: { date: dateStr, id: selectedFacility },
-        })
-        .then((res) => {
-          // console.log(res.data.timeSlots[0]);
-          setAvailableHours(res.data.timeSlots || []);
-        });
-    }
-  }, [selectedFacility, date, availableHours]);
+    if (!selectedFacility) return;
+    const dateStr = date.toISOString().split("T")[0];
+    api
+      .get(`/facilities/${selectedFacility}/availability/daily`, {
+        params: { date: dateStr, id: selectedFacility },
+      })
+      .then((res) => {
+        setAvailableHours(res.data.timeSlots || []);
+      });
+  }, [selectedFacility, date]);
 
   const handleSubmit = async () => {
     const today = new Date();
     if (date < new Date(today.setHours(0, 0, 0, 0))) {
-      Alert.alert("Error", "Tidak bisa booking di masa lalu");
+      alert("Tidak bisa booking di masa lalu");
       return;
     }
-
     if (!selectedFacility || !selectedHour) {
-      Alert.alert("Error", "Pilih facility dan jam mulai");
+      alert("Pilih facility dan jam mulai");
       return;
     }
-
     try {
       await api.post("/facilities/bookings", {
         facilityId: selectedFacility,
@@ -54,69 +51,108 @@ export default function BookFacilityScreen() {
         startHour: parseInt(selectedHour),
         notes,
       });
-      Alert.alert("Sukses", "Booking berhasil dibuat");
+      alert("Booking berhasil dibuat");
+      setDate(new Date());
+      setSelectedHour("");
+      setNotes("");
     } catch (err: any) {
-      Alert.alert("Gagal", err.response?.data?.message || "Terjadi kesalahan");
+      alert(err.response?.data?.message || "Terjadi kesalahan");
     }
-    setDate(new Date());
   };
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Text>Pilih Facility</Text>
-      <Picker
-        selectedValue={selectedFacility}
-        onValueChange={(val) => setSelectedFacility(val)}
-      >
-        <Picker.Item label="-- Pilih Facility --" value="" />
-        {facilities.map((f: any) => (
-          <Picker.Item key={f.id} label={f.name} value={f.id} />
-        ))}
-      </Picker>
+    <View style={{ flex: 1, padding: 16, backgroundColor: "#f9f9f9" }}>
+      <Card style={{ padding: 16 }}>
+        <Text variant="titleLarge" style={{ marginBottom: 16 }}>
+          Booking Fasilitas
+        </Text>
 
-      <Text>Pilih Tanggal</Text>
-      <Button
-        title={date.toDateString()}
-        onPress={() => setShowDatePicker(true)}
-      />
-      {showDatePicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="calendar"
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) setDate(selectedDate);
+        {/* Facility Picker */}
+        <Text variant="labelLarge">Pilih Facility</Text>
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 6,
+            marginBottom: 12,
           }}
-          minimumDate={new Date()}
+        >
+          <Picker
+            selectedValue={selectedFacility}
+            onValueChange={(val) => setSelectedFacility(val)}
+          >
+            <Picker.Item label="-- Pilih Facility --" value="" />
+            {facilities.map((f) => (
+              <Picker.Item key={f.id} label={f.name} value={f.id} />
+            ))}
+          </Picker>
+        </View>
+
+        {/* Date Picker */}
+        <Text variant="labelLarge">Pilih Tanggal</Text>
+        <Button
+          mode="outlined"
+          style={{ marginBottom: 12 }}
+          onPress={() => setShowDatePicker(true)}
+        >
+          {date.toDateString()}
+        </Button>
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="calendar"
+            minimumDate={new Date()}
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) setDate(selectedDate);
+            }}
+          />
+        )}
+
+        {/* Hour Picker */}
+        <Text variant="labelLarge">Pilih Jam Mulai</Text>
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 6,
+            marginBottom: 12,
+          }}
+        >
+          <Picker
+            selectedValue={selectedHour}
+            onValueChange={(val) => setSelectedHour(val)}
+          >
+            <Picker.Item label="-- Pilih Jam --" value="" />
+            {availableHours.map((item, idx) => (
+              <Picker.Item
+                key={idx}
+                label={`${item.hour}:00`}
+                value={item.hour}
+              />
+            ))}
+          </Picker>
+        </View>
+
+        {/* Notes */}
+        <TextInput
+          label="Catatan (Opsional)"
+          value={notes}
+          onChangeText={setNotes}
+          mode="outlined"
+          style={{ marginBottom: 16 }}
         />
-      )}
 
-      <Text>Pilih Jam Mulai</Text>
-      <Picker
-        selectedValue={selectedHour}
-        onValueChange={(val) => setSelectedHour(val)}
-      >
-        <Picker.Item label="-- Pilih Jam --" value="" />
-        {availableHours.map((item, hour: number) => (
-          <Picker.Item key={hour} label={`${item.hour}:00`} value={item.hour} />
-        ))}
-      </Picker>
-
-      <Text>Catatan (Opsional)</Text>
-      <TextInput
-        value={notes}
-        onChangeText={setNotes}
-        placeholder="Masukkan catatan"
-        style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 8,
-          marginVertical: 8,
-        }}
-      />
-
-      <Button title="Booking" onPress={handleSubmit} />
+        {/* Submit */}
+        <Button
+          mode="contained"
+          onPress={handleSubmit}
+          style={{ paddingVertical: 6 }}
+        >
+          Booking
+        </Button>
+      </Card>
     </View>
   );
 }

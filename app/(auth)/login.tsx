@@ -2,13 +2,14 @@ import { loginApi } from "@/lib/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, router } from "expo-router";
 import { useForm } from "react-hook-form";
-import { Button, Text, TextInput, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { Button, Text, TextInput, useTheme } from "react-native-paper";
 import { useAuthStore } from "../../lib/authStore";
 import { loginSchema, LoginSchema } from "../../lib/validation";
 
 export default function LoginScreen() {
-  const setAuth = useAuthStore((s) => s.setAuth);
-  // console.log();
+  const theme = useTheme();
+
   const {
     register,
     setValue,
@@ -22,42 +23,83 @@ export default function LoginScreen() {
     try {
       const res = await loginApi(data.email, data.password);
       await useAuthStore.getState().setAuth(res.accessToken, res.user);
-
-      router.replace("../(tabs)"); // Redirect ke home
+      router.replace("../(tabs)");
     } catch {
-      alert("Email atau password salah");
+      // Bisa pakai Snackbar atau Dialog dari Paper
+      console.log("Login gagal");
     }
   };
 
   return (
-    <View style={{ padding: 40, gap: 8 }}>
-      <Text style={{ fontSize: 24, fontWeight: "700" }}>Masuk</Text>
-      <Text>Email</Text>
+    <View style={styles.container}>
+      <Text variant="headlineMedium" style={styles.title}>
+        Masuk
+      </Text>
+
       <TextInput
+        label="Email"
+        mode="outlined"
         {...register("email")}
         onChangeText={(t) => setValue("email", t)}
-        style={{ borderWidth: 1, padding: 10 }}
+        error={!!errors.email}
+        style={styles.input}
       />
       {errors.email && (
-        <Text style={{ color: "red" }}>{errors.email.message}</Text>
+        <Text style={styles.errorText}>{errors.email.message}</Text>
       )}
 
-      <Text>Password</Text>
       <TextInput
+        label="Password"
+        mode="outlined"
+        secureTextEntry
         {...register("password")}
         onChangeText={(t) => setValue("password", t)}
-        secureTextEntry
-        style={{ borderWidth: 1, padding: 10 }}
+        error={!!errors.password}
+        style={styles.input}
       />
       {errors.password && (
-        <Text style={{ color: "red" }}>{errors.password.message}</Text>
+        <Text style={styles.errorText}>{errors.password.message}</Text>
       )}
 
       <Button
-        title={isSubmitting ? "Memproses…" : "Login"}
+        mode="contained"
         onPress={handleSubmit(onSubmit)}
-      />
-      <Link href="/(auth)/register">Belum punya akun? Daftar</Link>
+        loading={isSubmitting}
+        style={styles.button}
+      >
+        Login
+      </Button>
+
+      <Link
+        href="/(auth)/register"
+        style={{ textAlign: "center", marginTop: 8 }}
+      >
+        Belum punya akun? Daftar
+      </Link>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+    paddingHorizontal: 24,
+    paddingTop: 100,
+  },
+  title: {
+    marginBottom: 24,
+    fontWeight: "700",
+  },
+  input: {
+    marginBottom: 8,
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 8,
+  },
+  button: {
+    marginTop: 16,
+    paddingVertical: 4,
+  },
+});

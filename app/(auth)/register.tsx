@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useForm } from "react-hook-form";
-import { Button, Text, TextInput, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { Button, HelperText, Text, TextInput } from "react-native-paper";
 import { registerSchema, RegisterSchema } from "../../lib/validation";
 
 export default function RegisterScreen() {
@@ -14,24 +15,20 @@ export default function RegisterScreen() {
     resolver: zodResolver(registerSchema),
   });
 
-  // const { login } = useAuthStore();
-
   const onSubmit = async (data: RegisterSchema) => {
     try {
       const res = await fetch("https://booking-api.hyge.web.id/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-        redirect: "follow",
       });
-      console.log(res);
+
       if (!res.ok) {
         const err = await res.json();
-
         alert(err.message || "Registrasi gagal");
         return;
       }
-      // Pindah ke halaman facilities
+
       router.replace("/(auth)/login");
     } catch (error) {
       console.error(error);
@@ -40,43 +37,73 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={{ padding: 20, gap: 8 }}>
-      <Text style={{ fontSize: 24, fontWeight: "700" }}>Daftar</Text>
-      <Text>Nama</Text>
+    <View style={styles.container}>
+      <Text variant="headlineMedium" style={styles.title}>
+        Daftar
+      </Text>
+
       <TextInput
+        label="Nama"
+        mode="outlined"
         {...register("name")}
         onChangeText={(t) => setValue("name", t)}
-        style={{ borderWidth: 1, padding: 10 }}
+        error={!!errors.name}
       />
-      {errors.name && (
-        <Text style={{ color: "red" }}>{errors.name.message}</Text>
-      )}
+      <HelperText type="error" visible={!!errors.name}>
+        {errors.name?.message}
+      </HelperText>
 
-      <Text>Email</Text>
       <TextInput
+        label="Email"
+        mode="outlined"
+        keyboardType="email-address"
+        autoCapitalize="none"
         {...register("email")}
         onChangeText={(t) => setValue("email", t)}
-        style={{ borderWidth: 1, padding: 10 }}
+        error={!!errors.email}
       />
-      {errors.email && (
-        <Text style={{ color: "red" }}>{errors.email.message}</Text>
-      )}
+      <HelperText type="error" visible={!!errors.email}>
+        {errors.email?.message}
+      </HelperText>
 
-      <Text>Password</Text>
       <TextInput
+        label="Password"
+        mode="outlined"
+        secureTextEntry
         {...register("password")}
         onChangeText={(t) => setValue("password", t)}
-        secureTextEntry
-        style={{ borderWidth: 1, padding: 10 }}
+        error={!!errors.password}
       />
-      {errors.password && (
-        <Text style={{ color: "red" }}>{errors.password.message}</Text>
-      )}
+      <HelperText type="error" visible={!!errors.password}>
+        {errors.password?.message}
+      </HelperText>
 
       <Button
-        title={isSubmitting ? "Memproses…" : "Register"}
+        mode="contained"
         onPress={handleSubmit(onSubmit)}
-      />
+        loading={isSubmitting}
+        style={styles.button}
+      >
+        Register
+      </Button>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+    paddingHorizontal: 20,
+    paddingTop: 100,
+    gap: 8,
+  },
+  title: {
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  button: {
+    marginTop: 12,
+    paddingVertical: 6,
+  },
+});

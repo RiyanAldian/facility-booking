@@ -46,13 +46,18 @@ A mobile application built with **React Native** and **Expo Router** to manage f
 ```bash
 git clone https://github.com/RiyanAldian/facility-booking.git
 cd facility-booking
+```
 
 2. Install dependency
+```bash
 npm install
 # or
 yarn install
+```
 
 3. Start the development
+```bash 
 npm start
 # or
 yarn start
+```
